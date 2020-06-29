@@ -1,1 +1,29 @@
+#!/bin/bash
+dir=/data/tusers/chenx/STARRpeaker/data/ENCSR858MPS/ENCFF174UCT
+index_file=/data/tusers/chenx/STARRpeaker/data/ENCSR858MPS/ENCFF290SCG.fasta
+file=/data/tusers/chenx/STARRpeaker/data/ENCSR858MPS/ENCFF174UCT.fastq
+function grep_fq {
+	index=`sed -n $((i+1))p ${index_file}`
+	if [ ! -f $dir/$index ];then
+		touch $dir/$index
+	fi
+	grep -A3 `echo :$index` $file > $dir/$index
+	echo -ne "\n" 1>&6
+}
 
+[ -e /tmp/fd1 ] || mkfifo /tmp/fd1
+exec 6<> /tmp/fd1
+rm -rf /tmp/fd1    
+thread_num=16
+for ((i=1;i<=${thread_num};i++))
+do
+{
+	echo -ne "\n" 1>&6
+}
+done 
+index_number=`wc -l ${index_file} | awk -F ' ' '{print $1}'`
+for i in `seq 1 2 ${index_number}`; do
+	read -u6
+	grep_fq &
+done 
+exec 6>&-
